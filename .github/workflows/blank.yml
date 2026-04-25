@@ -1,0 +1,62 @@
+name: Build Android GKI Kernel
+
+on:
+  workflow_dispatch: # Cho phép chạy thủ công từ tab Actions
+  push:
+    branches:
+      - performance # Chạy khi có push vào branch main
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential flex git git-lfs gnupg \
+            gperf libelf-dev libncurses5-dev libssl-dev python3 python3-pip \
+            zip zlib1g-dev libarchive-tools curl wget
+          
+
+      - name: Run Build Script
+        run: |
+          # Chạy script chính của bạn
+           chmod +x  build_kernel_GKI.sh
+          ./build_kernel_GKI.sh
+          
+      - name: Strip Debug Symbols
+        run: |
+          # Thiết lập đường dẫn strip từ script của bạn
+          STRIP_BIN="kernel_platform/prebuilts-master/clang/host/linux-x86/clang-r416183b/bin/llvm-strip"
+          
+          if [ -f "$STRIP_BIN" ]; then
+            echo "[INFO] Stripping debug symbols from .ko files..."
+            find out/msm-waipio-waipio-gki/dist/ -name "*.ko" -exec $STRIP_BIN --strip-debug {} +
+          else
+            echo "[WARN] Strip binary not found, skipping strip step."
+          fi
+
+      - name: Prepare Artifacts
+        run: |
+          # Tạo thư mục tạm để gom các file cần thiết
+          mkdir -p output_artifacts
+          DIST_DIR="out/msm-waipio-waipio-gki/dist"
+          
+          echo "[INFO] Copying Kernal Images..."
+          cp ${DIST_DIR}/Image* output_artifacts/ 2>/dev/null || true
+          
+          echo "[INFO] Copying Kernel Modules (.ko)..."
+          # Tìm và copy tất cả file .ko trong thư mục dist
+          find ${DIST_DIR} -name "*.ko" -exec cp {} output_artifacts/ \;
+
+      - name: Upload Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: GKI-Kernel-Build-Artifacts
+          path: output_artifacts/
+          if-no-files-found: error
