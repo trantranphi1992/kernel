@@ -2,7 +2,7 @@
 
 export KERNEL_ROOT="$(pwd)"
 
-TOOLCHAIN_URL="https://github.com/Phihung151019/stock/releases/download/toolchain/toolchain.tar.gz"
+TOOLCHAIN_URL="https://github.com/trantranphi1992/kernel/releases/download/toolchain/toolchain.tar.gz"
 TOOLCHAIN_ARCHIVE="${KERNEL_ROOT}/toolchain.tar.gz"
 TOOLCHAIN_DST="${KERNEL_ROOT}/kernel_platform"
 
