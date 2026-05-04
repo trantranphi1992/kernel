@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Cho phép chạy thủ công từ tab Actions
   push:
     branches:
-      - main # Chạy khi có push vào branch main
+      - batterysave # Chạy khi có push vào branch main
 
 jobs:
   build-kernel:
